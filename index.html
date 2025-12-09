@@ -1,37 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Cairo Clock Widget</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #fbfef9; /* background of widget container */
+<!-- COUNTDOWN MARKUP (paste into Custom HTML or footer) -->
+<div id="wo-countdown-wrapper" style="max-width:600px;margin:20px auto;"></div>
+
+<style>
+  #wo-countdown {
+    background:#0f2458;
+    color:#fbfef9;
+    border-radius:28px;
+    padding:36px;
+    text-align:center;
+    box-shadow:0 12px 28px rgba(0,0,0,.35);
+    font-family:Arial, sans-serif;
+  }
+  #wo-countdown .title{font-size:34px;font-weight:700;margin-bottom:18px}
+  #wo-countdown .units{display:flex;justify-content:space-between;gap:10px}
+  #wo-countdown .unit{flex:1}
+  #wo-countdown .num{font-size:44px;font-weight:800}
+  #wo-countdown .label{font-size:13px;opacity:.95;margin-top:6px}
+  #wo-countdown .date-txt{margin-top:18px; font-size:15px; opacity:.95}
+  @media(max-width:480px){ #wo-countdown .num{font-size:30px} #wo-countdown .title{font-size:24px} .units{gap:6px} }
+</style>
+
+<script type="text/javascript">
+(function(){
+  // Create markup only if not present
+  if (!document.getElementById('wo-countdown')) {
+    var wrap = document.getElementById('wo-countdown-wrapper') || document.body;
+    wrap.insertAdjacentHTML('beforeend',
+      '<div id="wo-countdown">'+
+        '<div class="title">Winter Drop</div>'+
+        '<div class="units">'+
+          '<div class="unit"><div class="num" id="wo-days">--</div><div class="label">days</div></div>'+
+          '<div class="unit"><div class="num" id="wo-hours">--</div><div class="label">hours</div></div>'+
+          '<div class="unit"><div class="num" id="wo-mins">--</div><div class="label">minutes</div></div>'+
+          '<div class="unit"><div class="num" id="wo-secs">--</div><div class="label">seconds</div></div>'+
+        '</div>'+
+        '<div class="date-txt">December 25, 2025</div>'+
+      '</div>'
+    );
+  }
+
+  // Safe start: wait until elements are available
+  function getEl(id){ return document.getElementById(id); }
+
+  function startCountdown(){
+    var target = new Date('December 25, 2025 00:00:00 GMT+0200').getTime();
+    function tick(){
+      var now = Date.now();
+      var diff = target - now;
+      if (diff <= 0) {
+        getEl('wo-days').textContent = 0;
+        getEl('wo-hours').textContent = 0;
+        getEl('wo-mins').textContent = 0;
+        getEl('wo-secs').textContent = 0;
+        return;
+      }
+      var days  = Math.floor(diff / (1000*60*60*24));
+      var hours = Math.floor((diff / (1000*60*60)) % 24);
+      var mins  = Math.floor((diff / (1000*60)) % 60);
+      var secs  = Math.floor((diff / 1000) % 60);
+
+      getEl('wo-days').textContent = days;
+      getEl('wo-hours').textContent = String(hours).padStart(2,'0');
+      getEl('wo-mins').textContent = String(mins).padStart(2,'0');
+      getEl('wo-secs').textContent = String(secs).padStart(2,'0');
     }
-    .clock-container {
-      width: 100%;
-      height: 100%;
+
+    tick();
+    // store interval id on window so we don't double-start if script runs twice
+    if (!window.woCountdownInterval) window.woCountdownInterval = setInterval(tick,1000);
+  }
+
+  // Wait for DOM and/or wrapper to exist (some page builders render later)
+  var attempts = 0;
+  var waiter = setInterval(function(){
+    attempts++;
+    if (getEl('wo-countdown') || attempts>30) {
+      clearInterval(waiter);
+      startCountdown();
     }
-  </style>
-</head>
-<body>
-  <div class="clock-container">
-    <script src="https://cdn.logwork.com/widget/text.js"></script>
-    <a href="https://logwork.com/current-time-in-cairo-egypt-al-qahirah"
-       class="clock-widget-text"
-       data-timezone="Africa/Cairo"
-       data-language="en"
-       data-textcolor="#0f2458"
-       data-background="#fbfef9"
-       data-digitscolor="#0f2458">
-       Cairo, Egypt
-    </a>
-  </div>
-</body>
-</html>
+  },200);
+})();
+</script>
